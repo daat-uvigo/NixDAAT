@@ -69,7 +69,7 @@
     extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [];
     createHome = true; 
-    linger = true;
+    linger = true; # Keep user services running after logout
   };
 
   # GNOME UI
@@ -129,13 +129,14 @@
   systemd.user.services.reservassanteleco = {
     enable = true;
     after = [ "network.target" ];
-    wantedBy = [ "multi-user.target" ];
+    wantedBy = [ "multi-user.target" ]; # Start at boot
     description = "Web reservas santeleco";
     serviceConfig = {
       Type = "simple";
       ExecStart = ''pnpm host'';
       WorkingDirectory = ''/home/daat/WebEntradasSanTeleco/'';
     };
+    unitConfig.ConditionUser = "daat"; # Only enable service for "daat"
   };
 
   # Open ports in the firewall.
