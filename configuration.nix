@@ -112,17 +112,17 @@
   services.caddy = {
     enable = true;
     virtualHosts = {
-      "santeleco.uvigo.es" = {
-        extraConfig = ''
-          reverse_proxy :4321
-        '';
-      };
+     # "santeleco.uvigo.es" = {
+       #  extraConfig = ''
+         #  reverse_proxy :4321
+        # '';
+     #  };
       "daat.uvigo.es" = {
         extraConfig = ''
           root /var/www/html/daat/dist
           file_server
-        ''
-      }
+        '';
+      };
     };
   };
 
