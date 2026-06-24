@@ -109,14 +109,39 @@
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
 
+  # Pocketbase
+  systemd.services.pocketbase = {
+    script = "${pkgs.pocketbase}/bin/pocketbase serve --encryptionEnv=PB_ENCRYPTION_KEY --dir /path/to/pb_data";
+    serviceConfig = {
+      LimitNOFILE = 4096;
+      EnvironmentFile = ["/path/to/secret"];
+    };
+    wantedBy = [ "multi-user.target" ];
+  };
+  
+  # Caddy service
   services.caddy = {
     enable = true;
     virtualHosts = {
-     # "santeleco.uvigo.es" = {
-       #  extraConfig = ''
-         #  reverse_proxy :4321
-        # '';
-     #  };
+      "santeleco.uvigo.es" = {
+        extraConfig = ''
+          request_body {
+                  max_size 10MB
+          }
+          
+          handle /api/* {
+            reverse_proxy 127.0.0.1:8090 {
+                transport http {
+                    read_timeout 360s
+                }
+            }
+          }
+          
+          handle {
+            reverse_proxy :4321
+          }
+        '';
+      };
       "daat.uvigo.es" = {
         extraConfig = ''
           root /var/www/html/daat/dist
