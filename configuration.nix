@@ -158,7 +158,7 @@
     description = "Web reservas santeleco";
     serviceConfig = {
       Type = "simple";
-      ExecStart = ''pnpm host'';
+      ExecStart = "${pkgs.nodejs_24}/bin/node ./dist/server/entry.mjs";
       WorkingDirectory = ''/home/daat/WebEntradasSanTeleco/'';
     };
     unitConfig.ConditionUser = "daat"; # Only enable service for "daat"
