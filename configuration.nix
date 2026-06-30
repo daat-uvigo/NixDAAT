@@ -92,7 +92,7 @@
   environment.systemPackages = with pkgs; [
   #  vim # Do not forget to add an editor to edit configuration.nix! The>
   #  wget
-     caddy nodejs_24 git pnpm openssl
+     caddy nodejs_24 git pnpm openssl pocketbase
   ];
 
 
@@ -106,20 +106,19 @@
 
   # List services that you want to enable:
 
-  # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
-
   # Pocketbase
   systemd.services.pocketbase = {
-    script = "${pkgs.pocketbase}/bin/pocketbase serve --encryptionEnv=PB_ENCRYPTION_KEY --dir /path/to/pb_data";
+    script = "${pkgs.pocketbase}/bin/pocketbase serve --encryptionEnv=PB_ENCRYPTION_KEY --dir /home/daat/pb_data";
     serviceConfig = {
       LimitNOFILE = 4096;
-      EnvironmentFile = ["/path/to/secret"];
+      EnvironmentFile = ["/home/daat/pocketbase.env"];
     };
     wantedBy = [ "multi-user.target" ];
   };
-  
-  # Caddy service
+
+  # Enable the OpenSSH daemon.
+  services.openssh.enable = true;
+
   services.caddy = {
     enable = true;
     virtualHosts = {
@@ -156,6 +155,10 @@
     after = [ "network.target" ];
     wantedBy = [ "multi-user.target" ]; # Start at boot
     description = "Web reservas santeleco";
+    environment = {
+      HOST = "127.0.0.1";
+      PORT = "4321";
+    };
     serviceConfig = {
       Type = "simple";
       ExecStart = "${pkgs.nodejs_24}/bin/node ./dist/server/entry.mjs";
