@@ -92,7 +92,7 @@
   environment.systemPackages = with pkgs; [
   #  vim # Do not forget to add an editor to edit configuration.nix! The>
   #  wget
-     caddy nodejs_24 git pnpm openssl
+     caddy nodejs_24 git pnpm openssl pocketbase
   ];
 
 
@@ -106,17 +106,41 @@
 
   # List services that you want to enable:
 
+  # Pocketbase
+  systemd.services.pocketbase = {
+    script = "${pkgs.pocketbase}/bin/pocketbase serve --encryptionEnv=PB_ENCRYPTION_KEY --dir /home/daat/pb_data";
+    serviceConfig = {
+      LimitNOFILE = 4096;
+      EnvironmentFile = ["/home/daat/pocketbase.env"];
+    };
+    wantedBy = [ "multi-user.target" ];
+  };
+
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
 
   services.caddy = {
     enable = true;
     virtualHosts = {
-     # "santeleco.uvigo.es" = {
-       #  extraConfig = ''
-         #  reverse_proxy :4321
-        # '';
-     #  };
+      "santeleco.uvigo.es" = {
+        extraConfig = ''
+          request_body {
+                  max_size 10MB
+          }
+          
+          handle /api/* {
+            reverse_proxy 127.0.0.1:8090 {
+                transport http {
+                    read_timeout 360s
+                }
+            }
+          }
+          
+          handle {
+            reverse_proxy :4321
+          }
+        '';
+      };
       "daat.uvigo.es" = {
         extraConfig = ''
           root /var/www/html/daat/dist
@@ -131,9 +155,13 @@
     after = [ "network.target" ];
     wantedBy = [ "multi-user.target" ]; # Start at boot
     description = "Web reservas santeleco";
+    environment = {
+      HOST = "127.0.0.1";
+      PORT = "4321";
+    };
     serviceConfig = {
       Type = "simple";
-      ExecStart = ''pnpm host'';
+      ExecStart = "${pkgs.nodejs_24}/bin/node ./dist/server/entry.mjs";
       WorkingDirectory = ''/home/daat/WebEntradasSanTeleco/'';
     };
     unitConfig.ConditionUser = "daat"; # Only enable service for "daat"
