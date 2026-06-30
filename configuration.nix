@@ -128,7 +128,7 @@
                   max_size 10MB
           }
           
-          handle /api/* {
+          handle_path /api/* {
             reverse_proxy 127.0.0.1:8090 {
                 transport http {
                     read_timeout 360s
