@@ -155,7 +155,7 @@
     after = [ "network.target" ];
     wantedBy = [ "multi-user.target" ]; # Start at boot
     description = "Pull reservas santeleco";
-    startAt = "*-*-* 00:00:00";
+    # startAt = "*-*-* 00:00:00";
     serviceConfig = {
       RemainAfterExit = true; # Prevents the service from automatically starting on rebuild. See https://discourse.nixos.org/t/how-to-prevent-custom-systemd-service-from-restarting-on-nixos-rebuild-switch/43431
       Type = "simple";
@@ -163,14 +163,14 @@
       WorkingDirectory = ''/home/daat/WebEntradasSanTeleco/'';
     };
     unitConfig.ConditionUser = "daat"; # Only enable service for "daat"
-  }
+  };
   
   systemd.user.services.reservassanteleco = {
     enable = true;
     after = [ "network.target" ];
     wantedBy = [ "multi-user.target" ]; # Start at boot
     description = "Web reservas santeleco";
-    startAt = "*-*-* 00:01:00";
+    # startAt = "*-*-* 00:01:00";
     environment = {
       HOST = "127.0.0.1";
       PORT = "4321";
