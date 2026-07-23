@@ -68,7 +68,7 @@
     description = "daat";
     extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [];
-    createHome = true; 
+    createHome = true;
     linger = true; # Keep user services running after logout
   };
 
@@ -116,8 +116,27 @@
     wantedBy = [ "multi-user.target" ];
   };
 
-  # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
+  # Enable fail2ban with default ssh configs
+
+  services.fail2ban.enable = true;
+
+  # Config OpenSSH daemon
+
+  services.openssh = {
+    enable = true;
+    openFirewall = true;
+    ports = [
+      36349
+    ];
+    settings = {
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
+      PermitRootLogin = "no";
+      AllowUsers = [ "daat" ];
+      MaxAuthTries = 3;
+      PerSourcePenalties = "crash:3600s authfail:3600s max:86400s";
+    };
+  };
 
   services.caddy = {
     enable = true;
@@ -127,7 +146,7 @@
           request_body {
                   max_size 10MB
           }
-          
+
           handle_path /api/* {
             reverse_proxy 127.0.0.1:8090 {
                 transport http {
@@ -135,7 +154,7 @@
                 }
             }
           }
-          
+
           handle {
             reverse_proxy :4321
           }
@@ -150,27 +169,11 @@
     };
   };
 
-  systemd.user.services.pull_reservassanteleco = {
-    enable = true;
-    after = [ "network.target" ];
-    wantedBy = [ "multi-user.target" ]; # Start at boot
-    description = "Pull reservas santeleco";
-    # startAt = "*-*-* 00:00:00";
-    serviceConfig = {
-      RemainAfterExit = true; # Prevents the service from automatically starting on rebuild. See https://discourse.nixos.org/t/how-to-prevent-custom-systemd-service-from-restarting-on-nixos-rebuild-switch/43431
-      Type = "simple";
-      ExecStart = "${pkgs.git}/bin/git pull";
-      WorkingDirectory = ''/home/daat/WebEntradasSanTeleco/'';
-    };
-    unitConfig.ConditionUser = "daat"; # Only enable service for "daat"
-  };
-  
   systemd.user.services.reservassanteleco = {
     enable = true;
     after = [ "network.target" ];
     wantedBy = [ "multi-user.target" ]; # Start at boot
     description = "Web reservas santeleco";
-    # startAt = "*-*-* 00:01:00";
     environment = {
       HOST = "127.0.0.1";
       PORT = "4321";
@@ -184,7 +187,7 @@
   };
 
   # Open ports in the firewall.
-  networking.firewall.allowedTCPPorts = [ 80 443 22];
+  networking.firewall.allowedTCPPorts = [ 80 443 ];
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
