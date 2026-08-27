@@ -66,10 +66,33 @@
   users.users.daat = {
     isNormalUser = true;
     description = "daat";
-    extraGroups = [ "networkmanager" "wheel" ];
-    packages = with pkgs; [];
-    createHome = true;
+    packages = with pkgs; [ ];
+    createHome = true; 
     linger = true; # Keep user services running after logout
+  };
+
+  # Define a user account. Don't forget to set a password with ‘passwd’.
+  users.users.ceet = {
+    isNormalUser = true;
+    description = "ceet";
+    packages = with pkgs; [];
+    createHome = true; 
+    linger = true; # Keep user services running after logout
+  };
+
+  # Docker rootless
+  virtualisation.docker = {
+    # Consider disabling the system wide Docker daemon
+    enable = false;
+    rootless = {
+      enable = true;
+      package = pkgs.docker_29;
+      setSocketVariable = true;
+      # Optionally customize rootless Docker daemon settings
+      daemon.settings = {
+        data-root = "~/.local/docker";
+      };
+    };
   };
 
   # GNOME UI
@@ -164,6 +187,11 @@
         extraConfig = ''
           root /var/www/html/daat/dist
           file_server
+        '';
+      };
+      "pideturno.ceet.org.es" = {
+        extraConfig = ''
+          reverse_proxy 127.0.0.1:8080
         '';
       };
     };
