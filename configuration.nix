@@ -189,7 +189,7 @@
           file_server
         '';
       };
-      "pideturno.ceet.org.es" = {
+      "api.pideturno.ceet.org.es" = {
         extraConfig = ''
           reverse_proxy 127.0.0.1:8080
         '';
